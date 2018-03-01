@@ -6,7 +6,6 @@ RUN apt-get -y install curl \
                        php7.0 \
                        apache2 \
                        git \
-                       rsyslog \
                        mysql-client \
                        php7.0-cli \
                        php7.0-mbstring \
@@ -22,16 +21,17 @@ RUN apt-get -y install curl \
                        libapache2-mod-fastcgi \
                        php7.0-fpm
 
-RUN curl -s5 https://getcomposer.org/installer | php
-
 WORKDIR app
 
-RUN cd /app/ && wget https://ftp.drupal.org/files/projects/drupal-8.3.7.tar.gz && tar -zxvf *.tgz
+RUN cd /app/ && wget https://ftp.drupal.org/files/projects/drupal-8.3.7.tar.gz && tar -zxvf *.tar.gz
 
+RUN mv /app/drupal-8.3.7/* /app/ && rm -rf /app/drupal-8.3.7
 COPY ./init.sh /usr/local/bin/init
 RUN chmod +rx /usr/local/bin/*
 
-RUN cd /app/ && php compoer.phar install
+RUN cd /app/ && curl -sS https://getcomposer.org/installer | php
+
+RUN cd /app/ && php composer.phar install
 
 COPY ./001-site.conf /etc/apache2/sites-available/
 RUN a2enmod php7.0
@@ -39,7 +39,7 @@ RUN a2enmod rewrite
 RUN a2enmod proxy
 RUN a2enmod proxy_http
 RUN a2enmod expires
-RUN a2enmod fascgi
+RUN a2enmod fastcgi
 RUN a2enmod proxy_fcgi
 RUN a2enconf php7.0-fpm
 
